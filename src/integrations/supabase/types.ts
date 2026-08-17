@@ -65,6 +65,21 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           created_at: string
