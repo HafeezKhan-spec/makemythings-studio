@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { formatINR, formatDate } from "@/lib/format";
+import { inr, formatDate } from "@/lib/format";
 import {
   adminDeleteProduct,
   adminListCoupons,
@@ -111,7 +111,7 @@ function Panel({ children }: { children: React.ReactNode }) {
 function Overview() {
   const { data } = useQuery({ queryKey: ["admin-dashboard"], queryFn: () => getAdminDashboard() });
   const stats = [
-    ["Revenue (paid)", formatINR(data?.revenue ?? 0)],
+    ["Revenue (paid)", inr(data?.revenue ?? 0)],
     ["Orders", String(data?.orderCount ?? 0)],
     ["Pending orders", String(data?.pendingOrders ?? 0)],
     ["Products", String(data?.productCount ?? 0)],
@@ -143,7 +143,7 @@ function Overview() {
               <span className="text-xs text-muted-foreground">
                 {formatDate(String(order.created_at))}
               </span>
-              <span className="font-semibold">{formatINR(Number(order.total))}</span>
+              <span className="font-semibold">{inr(Number(order.total))}</span>
             </div>
           ))}
         </div>
@@ -174,7 +174,7 @@ function Products() {
           >
             <span className="font-medium">{String(product.name)}</span>
             <span className="text-xs text-muted-foreground">Stock {Number(product.stock)}</span>
-            <span className="font-semibold">{formatINR(Number(product.price))}</span>
+            <span className="font-semibold">{inr(Number(product.price))}</span>
             <Button
               size="sm"
               variant="secondary"
@@ -222,7 +222,7 @@ function Orders() {
           >
             <span className="font-medium">{String(order.order_number)}</span>
             <span className="text-xs text-muted-foreground">{String(order.customer_email)}</span>
-            <span className="font-semibold">{formatINR(Number(order.total))}</span>
+            <span className="font-semibold">{inr(Number(order.total))}</span>
             <Select
               value={String(order.status)}
               onValueChange={(value) =>
