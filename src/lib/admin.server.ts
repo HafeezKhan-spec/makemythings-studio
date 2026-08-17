@@ -43,3 +43,10 @@ export async function loadDashboard(supabase: SupabaseClient) {
     recentOrders: orderRows.slice(0, 8),
   };
 }
+
+/** Drops undefined keys so exactOptionalPropertyTypes-safe payloads reach Supabase. */
+export function clean<T extends object>(value: T) {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, v]) => v !== undefined),
+  ) as never;
+}

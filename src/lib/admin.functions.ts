@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdmin, loadDashboard, slugify } from "./admin.server";
+import { assertAdmin, clean, loadDashboard, slugify } from "./admin.server";
 
 export const getMyAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -66,13 +66,13 @@ export const adminSaveProduct = createServerFn({ method: "POST" })
     const payload = { ...fields, slug: slugify(data.name) };
 
     if (id) {
-      const { error } = await context.supabase.from("products").update(payload).eq("id", id);
+      const { error } = await context.supabase.from("products").update(clean(payload)).eq("id", id);
       if (error) throw new Error(error.message);
       return { id };
     }
     const { data: created, error } = await context.supabase
       .from("products")
-      .insert(payload)
+      .insert(clean(payload))
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -120,13 +120,13 @@ export const adminSaveCategory = createServerFn({ method: "POST" })
     const { id, ...fields } = data;
     const payload = { ...fields, slug: slugify(data.name) };
     if (id) {
-      const { error } = await context.supabase.from("categories").update(payload).eq("id", id);
+      const { error } = await context.supabase.from("categories").update(clean(payload)).eq("id", id);
       if (error) throw new Error(error.message);
       return { id };
     }
     const { data: created, error } = await context.supabase
       .from("categories")
-      .insert(payload)
+      .insert(clean(payload))
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -174,7 +174,7 @@ export const adminUpdateOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { id, ...fields } = data;
-    const { error } = await context.supabase.from("orders").update(fields).eq("id", id);
+    const { error } = await context.supabase.from("orders").update(clean(fields)).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -207,7 +207,7 @@ export const adminUpdateRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { id, ...fields } = data;
-    const { error } = await context.supabase.from("custom_requests").update(fields).eq("id", id);
+    const { error } = await context.supabase.from("custom_requests").update(clean(fields)).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -245,13 +245,13 @@ export const adminSaveCoupon = createServerFn({ method: "POST" })
     const { id, ...fields } = data;
     const payload = { ...fields, code: data.code.toUpperCase() };
     if (id) {
-      const { error } = await context.supabase.from("coupons").update(payload).eq("id", id);
+      const { error } = await context.supabase.from("coupons").update(clean(payload)).eq("id", id);
       if (error) throw new Error(error.message);
       return { id };
     }
     const { data: created, error } = await context.supabase
       .from("coupons")
-      .insert(payload)
+      .insert(clean(payload))
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -296,7 +296,7 @@ export const adminSaveSettings = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { id, ...fields } = data;
-    const { error } = await context.supabase.from("store_settings").update(fields).eq("id", id);
+    const { error } = await context.supabase.from("store_settings").update(clean(fields)).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
