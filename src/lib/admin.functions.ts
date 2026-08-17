@@ -296,7 +296,7 @@ export const adminSaveSettings = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { id, ...fields } = data;
-    const { error } = await context.supabase.from("store_settings").update(clean(fields)).eq("id", id);
+    const { error } = await context.supabase.from("store_settings").update(clean(fields)).eq("id", id as never);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
