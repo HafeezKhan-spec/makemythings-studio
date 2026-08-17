@@ -24,6 +24,7 @@ export type Database = {
           house: string
           id: string
           is_default: boolean
+          label: string | null
           phone: string
           pincode: string
           state: string
@@ -39,6 +40,7 @@ export type Database = {
           house: string
           id?: string
           is_default?: boolean
+          label?: string | null
           phone: string
           pincode: string
           state: string
@@ -54,11 +56,27 @@ export type Database = {
           house?: string
           id?: string
           is_default?: boolean
+          label?: string | null
           phone?: string
           pincode?: string
           state?: string
           street?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
         }
         Relationships: []
       }
@@ -100,6 +118,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
