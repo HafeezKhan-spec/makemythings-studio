@@ -16,17 +16,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { submitCustomRequest } from "@/lib/orders.functions";
+import { storeGuestQuoteEmail } from "@/components/site/CustomQuoteNotifier";
+import { uploadCustomRequestFile } from "@/lib/upload.functions";
 
 export const Route = createFileRoute("/custom-printing")({
   head: () => ({
     meta: [
-      { title: "Custom 3D Printing Requests — MakeMyThings.in" },
+      { title: "Custom 3D Printing Requests — MakeMyThing.in" },
       {
         name: "description",
         content:
           "Upload an STL or a reference photo and get a quote for a fully custom 3D printed product. We can model it for you too.",
       },
-      { property: "og:title", content: "Custom 3D Printing — MakeMyThings.in" },
+      { property: "og:title", content: "Custom 3D Printing — MakeMyThing.in" },
       {
         property: "og:description",
         content: "Don't have a 3D model? We can turn your idea into reality.",
@@ -55,6 +57,43 @@ function CustomPrinting() {
   });
   const [modelFile, setModelFile] = useState<string>("");
   const [referenceFile, setReferenceFile] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+
+  async function uploadFile(file: File, kind: "model" | "reference") {
+    if (!form.name.trim() || !/.+@.+\..+/.test(form.email)) {
+      toast.error("Enter your name and email before uploading files.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result ?? "");
+          resolve(result.includes(",") ? result.split(",")[1]! : result);
+        };
+        reader.onerror = () => reject(new Error("Could not read file"));
+        reader.readAsDataURL(file);
+      });
+      const result = await uploadCustomRequestFile({
+        data: {
+          kind,
+          mimeType: file.type || "application/octet-stream",
+          fileName: file.name,
+          dataBase64: base64,
+          email: form.email.trim(),
+          name: form.name.trim(),
+        },
+      });
+      if (kind === "model") setModelFile(result.url);
+      else setReferenceFile(result.url);
+      toast.success(`${kind === "model" ? "Model" : "Reference image"} uploaded`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const submit = useMutation({
     mutationFn: () =>
@@ -73,6 +112,7 @@ function CustomPrinting() {
         },
       }),
     onSuccess: () => {
+      storeGuestQuoteEmail(form.email.trim());
       toast.success("Request received — we'll reply with a quote within 24 hours.");
       setForm({
         name: "",
@@ -210,27 +250,35 @@ function CustomPrinting() {
           />
         </Field>
 
-        <Field label="Upload 3D model (STL / OBJ / 3MF)">
+        <Field label="Upload 3D model (STL)">
           <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-input bg-background px-4 py-3 text-xs text-muted-foreground">
             <Upload className="h-4 w-4 text-primary" />
-            {modelFile || "Choose a file"}
+            {modelFile ? modelFile.split("/").pop() : "Choose STL file"}
             <input
               type="file"
-              accept=".stl,.obj,.3mf,.step"
+              accept=".stl,model/stl,application/octet-stream"
               className="hidden"
-              onChange={(e) => setModelFile(e.target.files?.[0]?.name ?? "")}
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadFile(file, "model");
+              }}
             />
           </label>
         </Field>
         <Field label="Upload reference image">
           <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-input bg-background px-4 py-3 text-xs text-muted-foreground">
             <Upload className="h-4 w-4 text-primary" />
-            {referenceFile || "Choose an image"}
+            {referenceFile ? referenceFile.split("/").pop() : "Choose an image"}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               className="hidden"
-              onChange={(e) => setReferenceFile(e.target.files?.[0]?.name ?? "")}
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadFile(file, "reference");
+              }}
             />
           </label>
         </Field>
@@ -257,8 +305,8 @@ function CustomPrinting() {
             Submit request
           </Button>
           <p className="mt-3 text-xs text-muted-foreground">
-            File uploads are recorded with your request; our team will email you a secure upload link
-            for large models.
+            STL and reference files are uploaded securely to our server. For production, configure
+            cloud storage (S3/R2) via environment variables when scaling beyond local disk.
           </p>
         </div>
       </form>

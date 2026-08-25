@@ -45,13 +45,13 @@ export const Route = createFileRoute("/shop")({
   }),
   head: () => ({
     meta: [
-      { title: "Shop 3D Printed Products — MakeMyThings.in" },
+      { title: "Shop 3D Printed Products — MakeMyThing.in" },
       {
         name: "description",
         content:
           "Browse 3D printed figures, décor, keychains, desk accessories and tech gear. Filter by category, price and offers.",
       },
-      { property: "og:title", content: "Shop 3D Printed Products — MakeMyThings.in" },
+      { property: "og:title", content: "Shop 3D Printed Products — MakeMyThing.in" },
       {
         property: "og:description",
         content: "Studio-grade 3D printed products, shipped across India.",

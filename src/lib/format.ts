@@ -24,15 +24,64 @@ export function orderStatusLabel(status: string): string {
     .join(" ");
 }
 
+export function paymentStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: "Pending",
+    processing: "Processing",
+    paid: "Paid",
+    failed: "Failed",
+    cancelled: "Cancelled",
+    expired: "Expired",
+    refunded: "Refunded",
+  };
+  return labels[status] ?? orderStatusLabel(status);
+}
+
+export const PAYMENT_STATUS_FLOW = [
+  "pending",
+  "processing",
+  "paid",
+  "failed",
+  "cancelled",
+  "expired",
+  "refunded",
+] as const;
+
 export const ORDER_STATUS_FLOW = [
   "pending",
+  "payment_pending",
   "paid",
   "processing",
   "printing",
   "quality_check",
+  "packed",
   "shipped",
   "out_for_delivery",
   "delivered",
+] as const;
+
+export const ADMIN_ORDER_STATUSES = [
+  "pending",
+  "payment_pending",
+  "paid",
+  "processing",
+  "printing",
+  "quality_check",
+  "packed",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+] as const;
+
+export const CUSTOM_REQUEST_STATUSES = [
+  "new",
+  "reviewing",
+  "quote_sent",
+  "customer_approved",
+  "in_production",
+  "completed",
+  "rejected",
 ] as const;
 
 export function formatDate(value: string | null | undefined): string {

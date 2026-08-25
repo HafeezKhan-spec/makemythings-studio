@@ -1,46 +1,77 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { getMe } from "@/lib/auth.functions";
+import { TOKEN_KEY } from "@/lib/auth.constants";
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  roles: string[];
+  is_admin: boolean;
+};
 
 type AuthContextValue = {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refresh: () => Promise<void>;
+  setToken: (token: string) => void;
 };
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
-  session: null,
   loading: true,
   signOut: async () => {},
+  refresh: async () => {},
+  setToken: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
+  const refresh = useCallback(async () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      setUser(null);
       setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+      return;
+    }
+    try {
+      const profile = await getMe();
+      setUser(profile);
+    } catch {
+      localStorage.removeItem(TOKEN_KEY);
+      setUser(null);
+    } finally {
       setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    }
   }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const setToken = useCallback(
+    (token: string) => {
+      localStorage.setItem(TOKEN_KEY, token);
+      refresh();
+    },
+    [refresh],
+  );
 
   return (
     <AuthContext.Provider
       value={{
-        session,
-        user: session?.user ?? null,
+        user,
         loading,
+        refresh,
+        setToken,
         signOut: async () => {
-          await supabase.auth.signOut();
+          localStorage.removeItem(TOKEN_KEY);
+          setUser(null);
         },
       }}
     >

@@ -4,16 +4,16 @@ import { Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
-import { supabase } from "@/integrations/supabase/client";
+import { listMyWishlist } from "@/lib/wishlist.functions";
 import { useAuth } from "@/hooks/useAuth";
 import type { Product } from "@/lib/types";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
-      { title: "My Wishlist — MakeMyThings.in" },
-      { name: "description", content: "Products you've saved for later at MakeMyThings.in." },
-      { property: "og:title", content: "My Wishlist — MakeMyThings.in" },
+      { title: "My Wishlist — MakeMyThing.in" },
+      { name: "description", content: "Products you've saved for later at MakeMyThing.in." },
+      { property: "og:title", content: "My Wishlist — MakeMyThing.in" },
       { property: "og:description", content: "Saved 3D printed products." },
       { name: "robots", content: "noindex" },
     ],
@@ -27,13 +27,7 @@ function Wishlist() {
   const { data: products, isLoading } = useQuery({
     queryKey: ["wishlist", user?.id],
     enabled: Boolean(user),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wishlists")
-        .select("product:products(*, category:categories(name,slug))");
-      if (error) throw new Error(error.message);
-      return (data ?? []).flatMap((row) => (row.product ? [row.product] : []));
-    },
+    queryFn: () => listMyWishlist(),
   });
 
   if (!user) {

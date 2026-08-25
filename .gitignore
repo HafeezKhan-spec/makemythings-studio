@@ -14,7 +14,13 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+public/uploads/products/*
+!public/uploads/products/.gitkeep
+public/uploads/custom-requests/*
+!public/uploads/custom-requests/.gitkeep
 *.local
+.env
+.env.local
 
 # Wrangler / Cloudflare
 .wrangler/

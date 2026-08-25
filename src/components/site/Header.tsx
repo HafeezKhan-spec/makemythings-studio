@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
+import { SiteLogo } from "@/components/site/SiteLogo";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -57,6 +58,13 @@ export function Header() {
                 </Link>
               ))}
               <Link
+                to="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-surface hover:text-foreground"
+              >
+                My Account
+              </Link>
+              <Link
                 to="/orders"
                 onClick={() => setMenuOpen(false)}
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-surface hover:text-foreground"
@@ -67,13 +75,8 @@ export function Header() {
           </SheetContent>
         </Sheet>
 
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-ember text-sm font-black text-primary-foreground">
-            M
-          </span>
-          <span className="font-display text-base font-extrabold tracking-tight sm:text-lg">
-            MakeMyThings<span className="text-gradient-ember">.in</span>
-          </span>
+        <Link to="/" className="flex shrink-0 items-center">
+          <SiteLogo variant="header" />
         </Link>
 
         <nav className="ml-6 hidden items-center gap-1 lg:flex">
@@ -131,10 +134,15 @@ export function Header() {
           </Button>
 
           <Button asChild variant="ghost" size="icon" aria-label="Account">
-            <Link to={user ? "/orders" : "/auth"}>
+            <Link to={user ? "/profile" : "/auth"}>
               <User className="h-5 w-5" />
             </Link>
           </Button>
+          {user?.is_admin ? (
+            <Button asChild variant="outline" size="sm" className="hidden rounded-full sm:inline-flex">
+              <Link to="/admin">Admin</Link>
+            </Button>
+          ) : null}
         </div>
       </div>
 

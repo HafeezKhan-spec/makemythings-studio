@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Stars } from "@/components/site/Stars";
 import { ProductCard } from "@/components/site/ProductCard";
 import { useCart } from "@/context/cart";
+import { useAuth } from "@/hooks/useAuth";
+import { checkoutRedirectPath } from "@/lib/auth-redirect";
 import { getProduct } from "@/lib/catalog.functions";
+import { showAddedToCartToast } from "@/lib/cart-toast";
 import { discountPercent, inr } from "@/lib/format";
 import type { Product } from "@/lib/types";
 
@@ -27,10 +30,10 @@ export const Route = createFileRoute("/product/$slug")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Product not found — MakeMyThings.in" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Product not found — MakeMyThing.in" }, { name: "robots", content: "noindex" }] };
     }
     const product = loaderData.product as unknown as Product;
-    const title = `${product.name} — MakeMyThings.in`;
+    const title = `${product.name} — MakeMyThing.in`;
     const description =
       product.short_description ?? `Buy the ${product.name}, 3D printed to order in India.`;
     return {
@@ -49,7 +52,7 @@ export const Route = createFileRoute("/product/$slug")({
             name: product.name,
             description,
             image: product.images,
-            brand: { "@type": "Brand", name: "MakeMyThings.in" },
+            brand: { "@type": "Brand", name: "MakeMyThing.in" },
             offers: {
               "@type": "Offer",
               price: Number(product.price),
@@ -76,7 +79,8 @@ export const Route = createFileRoute("/product/$slug")({
 function ProductPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(productQuery(slug));
-  const { add } = useCart();
+  const { add, getQuantity } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
@@ -84,10 +88,17 @@ function ProductPage() {
   const [delivery, setDelivery] = useState<string | null>(null);
 
   const product = data!.product as unknown as Product;
+  const inCartQty = getQuantity(product.id);
   const related = (data!.related ?? []) as unknown as Product[];
   const reviews = data!.reviews as { id: string; author_name: string | null; rating: number; body: string | null; created_at: string }[];
   const off = discountPercent(product.price, product.original_price);
   const images = product.images?.length ? product.images : ["/images/hero-3d.jpg"];
+  const videos = product.videos ?? [];
+  type GalleryItem = { type: "image"; url: string } | { type: "video"; url: string };
+  const gallery: GalleryItem[] = [
+    ...images.map((url) => ({ type: "image" as const, url })),
+    ...videos.map((url) => ({ type: "video" as const, url })),
+  ];
 
   function addToCart(quiet = false) {
     add(
@@ -101,7 +112,26 @@ function ProductPage() {
       },
       quantity,
     );
-    if (!quiet) toast.success(`${product.name} added to cart`);
+    if (!quiet) showAddedToCartToast(product.name, () => navigate({ to: "/cart" }));
+  }
+
+  function buyNow() {
+    add(
+      {
+        productId: product.id,
+        slug: product.slug,
+        name: product.name,
+        image: images[0] ?? null,
+        price: Number(product.price),
+        originalPrice: product.original_price ? Number(product.original_price) : null,
+      },
+      quantity,
+    );
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: checkoutRedirectPath() } });
+      return;
+    }
+    navigate({ to: "/checkout" });
   }
 
   return (
@@ -125,23 +155,42 @@ function ProductPage() {
       <div className="grid gap-10 lg:grid-cols-2">
         <div>
           <div className="overflow-hidden rounded-3xl border border-border bg-surface">
-            <img
-              src={images[activeImage] ?? images[0]}
-              alt={product.name}
-              width={1024}
-              height={1024}
-              className="aspect-square w-full object-cover"
-            />
+            {gallery[activeImage]?.type === "video" ? (
+              <video
+                key={gallery[activeImage].url}
+                src={gallery[activeImage].url}
+                controls
+                playsInline
+                className="aspect-square w-full object-cover"
+              />
+            ) : (
+              <img
+                src={gallery[activeImage]?.url ?? images[0]}
+                alt={product.name}
+                width={1024}
+                height={1024}
+                className="aspect-square w-full object-cover"
+              />
+            )}
           </div>
-          {images.length > 1 ? (
-            <div className="mt-3 flex gap-3">
-              {images.map((image, index) => (
+          {gallery.length > 1 ? (
+            <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+              {gallery.map((item, index) => (
                 <button
-                  key={image}
+                  key={`${item.type}-${item.url}`}
                   onClick={() => setActiveImage(index)}
-                  className={`h-20 w-20 overflow-hidden rounded-xl border ${index === activeImage ? "border-primary" : "border-border"}`}
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border ${index === activeImage ? "border-primary" : "border-border"}`}
                 >
-                  <img src={image} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  {item.type === "video" ? (
+                    <>
+                      <video src={item.url} muted playsInline className="h-full w-full object-cover" />
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 text-[10px] font-semibold text-white">
+                        Video
+                      </span>
+                    </>
+                  ) : (
+                    <img src={item.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  )}
                 </button>
               ))}
             </div>
@@ -219,17 +268,14 @@ function ProductPage() {
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <Button size="lg" className="rounded-full" onClick={() => addToCart()}>
-              Add to cart
+            <Button size="lg" className="rounded-full" variant={inCartQty ? "secondary" : "default"} onClick={() => addToCart()}>
+              {inCartQty ? `In cart (${inCartQty}) · Add more` : "Add to cart"}
             </Button>
             <Button
               size="lg"
               variant="secondary"
               className="rounded-full"
-              onClick={() => {
-                addToCart(true);
-                navigate({ to: "/checkout" });
-              }}
+              onClick={() => buyNow()}
             >
               Buy now
             </Button>

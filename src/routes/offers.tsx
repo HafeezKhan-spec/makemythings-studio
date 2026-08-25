@@ -10,12 +10,12 @@ import type { Product } from "@/lib/types";
 export const Route = createFileRoute("/offers")({
   head: () => ({
     meta: [
-      { title: "Offers & Coupons — MakeMyThings.in" },
+      { title: "Offers & Coupons — MakeMyThing.in" },
       {
         name: "description",
         content: "Live discounts on 3D printed collectibles, décor and custom prints. Use code MAKE10 for 10% off.",
       },
-      { property: "og:title", content: "Offers & Coupons — MakeMyThings.in" },
+      { property: "og:title", content: "Offers & Coupons — MakeMyThing.in" },
       { property: "og:description", content: "Save on premium 3D printed products." },
     ],
   }),

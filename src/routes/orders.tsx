@@ -3,16 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, PackageSearch } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { listMyOrders } from "@/lib/orders.functions";
 import { useAuth } from "@/hooks/useAuth";
-import { ORDER_STATUS_FLOW, formatDate, inr, orderStatusLabel } from "@/lib/format";
+import { ORDER_STATUS_FLOW, formatDate, inr, orderStatusLabel, paymentStatusLabel } from "@/lib/format";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({
     meta: [
-      { title: "My Orders — MakeMyThings.in" },
+      { title: "My Orders — MakeMyThing.in" },
       { name: "description", content: "Track your 3D printing orders and delivery status." },
-      { property: "og:title", content: "My Orders — MakeMyThings.in" },
+      { property: "og:title", content: "My Orders — MakeMyThing.in" },
       { property: "og:description", content: "Order history and live production status." },
       { name: "robots", content: "noindex" },
     ],
@@ -26,14 +26,7 @@ function Orders() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: Boolean(user),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, items:order_items(id,product_name,product_image,quantity,line_total)")
-        .order("created_at", { ascending: false });
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
+    queryFn: () => listMyOrders(),
   });
 
   if (loading) {
@@ -89,7 +82,7 @@ function Orders() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="rounded-full border border-border px-3 py-1">
-                      Payment: {orderStatusLabel(order.payment_status)}
+                      Payment: {paymentStatusLabel(order.payment_status)}
                     </span>
                     <span className="rounded-full bg-primary/15 px-3 py-1 font-medium text-primary">
                       {orderStatusLabel(order.status)}
@@ -101,6 +94,16 @@ function Orders() {
                 <p className="mt-3 text-xs text-muted-foreground">
                   {items.map((item) => `${item.product_name} × ${item.quantity}`).join(" · ")}
                 </p>
+
+                {(order as { awb_number?: string; courier_partner?: string }).awb_number ? (
+                  <p className="mt-2 rounded-xl border border-border bg-background px-3 py-2 text-xs">
+                    <span className="font-semibold">Tracking:</span>{" "}
+                    {(order as { courier_partner?: string }).courier_partner
+                      ? `${(order as { courier_partner?: string }).courier_partner} · `
+                      : ""}
+                    {(order as { awb_number?: string }).awb_number}
+                  </p>
+                ) : null}
 
                 <ol className="mt-5 flex gap-1.5">
                   {ORDER_STATUS_FLOW.map((status, index) => (
@@ -119,12 +122,19 @@ function Orders() {
                   ))}
                 </ol>
 
-                <div className="mt-5">
+                <div className="mt-5 flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary" className="rounded-full">
                     <Link to="/order/$id" params={{ id: order.id }}>
                       View details
                     </Link>
                   </Button>
+                  {order.payment_status !== "paid" ? (
+                    <Button asChild size="sm" className="rounded-full">
+                      <Link to="/order/$id" params={{ id: order.id }}>
+                        Complete payment
+                      </Link>
+                    </Button>
+                  ) : null}
                 </div>
               </article>
             );

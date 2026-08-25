@@ -8,12 +8,12 @@ import { getStoreSettings } from "@/lib/catalog.functions";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact MakeMyThings.in — 3D Printing Support" },
+      { title: "Contact MakeMyThing.in — 3D Printing Support" },
       {
         name: "description",
-        content: "Questions about an order or a custom print? Reach the MakeMyThings.in studio team.",
+        content: "Questions about an order or a custom print? Reach the MakeMyThing.in studio team.",
       },
-      { property: "og:title", content: "Contact MakeMyThings.in" },
+      { property: "og:title", content: "Contact MakeMyThing.in" },
       { property: "og:description", content: "Talk to our 3D printing studio team." },
     ],
   }),
@@ -35,13 +35,13 @@ function Contact() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <a
-          href={`mailto:${settings?.business_email ?? "hello@makemythings.in"}`}
+          href={`mailto:${settings?.business_email ?? "hello@MakeMyThing.in"}`}
           className="card-hover rounded-2xl border border-border bg-gradient-surface p-5"
         >
           <Mail className="h-5 w-5 text-primary" />
           <h2 className="mt-3 text-sm font-semibold">Email</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            {settings?.business_email ?? "hello@makemythings.in"}
+            {settings?.business_email ?? "hello@MakeMyThing.in"}
           </p>
         </a>
         <a

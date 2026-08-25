@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Our 3D Printing Studio — MakeMyThings.in" },
+      { title: "About Our 3D Printing Studio — MakeMyThing.in" },
       {
         name: "description",
         content:
-          "MakeMyThings.in is an Indian 3D printing studio making collectibles, décor and custom products to order.",
+          "MakeMyThing.in is an Indian 3D printing studio making collectibles, décor and custom products to order.",
       },
-      { property: "og:title", content: "About MakeMyThings.in" },
+      { property: "og:title", content: "About MakeMyThing.in" },
       {
         property: "og:description",
         content: "An Indian 3D printing studio for collectibles, décor and custom products.",
@@ -29,7 +29,7 @@ function About() {
       </h1>
       <div className="mt-6 space-y-5 text-sm leading-relaxed text-muted-foreground sm:text-base">
         <p>
-          MakeMyThings.in started with one printer, a spool of grey PLA and a lot of requests from
+          MakeMyThing.in started with one printer, a spool of grey PLA and a lot of requests from
           friends. Today we run a small studio in India producing collectibles, home décor, desk
           accessories and completely custom pieces for customers across the country.
         </p>

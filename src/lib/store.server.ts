@@ -1,30 +1,6 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-/**
- * Anon-role client for public catalog reads during SSR. RLS still applies.
- */
-export function publicClient(): SupabaseClient {
-  const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"]!;
-  const key =
-    process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"]!;
-
-  return createClient(url, key, {
-    auth: { persistSession: false },
-    global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-          headers.delete("Authorization");
-        }
-        headers.set("apikey", key);
-        return fetch(input as string, { ...init, headers });
-      },
-    },
-  });
-}
-
-export const PRODUCT_COLUMNS =
-  "id,name,slug,short_description,description,price,original_price,category_id,images,stock,material,colors,size,production_time,tags,rating,review_count,is_featured,is_trending,is_best_seller,is_new_arrival,created_at,category:categories(name,slug)";
+import { connectMongo } from "@/integrations/mongodb/connect.server";
+import { Category, mapCategory, mapProduct, Product } from "@/integrations/mongodb/models";
+import type { Types } from "mongoose";
 
 export type ProductFilters = {
   search?: string | undefined;
@@ -37,52 +13,124 @@ export type ProductFilters = {
 };
 
 export async function queryProducts(filters: ProductFilters) {
-  const supabase = publicClient();
-  let query = supabase.from("products").select(PRODUCT_COLUMNS).eq("is_active", true);
+  await connectMongo();
+
+  const query: Record<string, unknown> = { isActive: true };
 
   if (filters.category) {
-    const { data: cat } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", filters.category)
-      .maybeSingle();
-    query = query.eq("category_id", cat?.id ?? "00000000-0000-0000-0000-000000000000");
+    const cat = await Category.findOne({ slug: filters.category, isActive: true }).lean();
+    query.categoryId = cat?._id ?? null;
   }
+
   if (filters.search) {
-    const term = `%${filters.search}%`;
-    query = query.or(
-      `name.ilike.${term},short_description.ilike.${term},description.ilike.${term}`,
-    );
+    const term = filters.search.trim();
+    query.$or = [
+      { name: { $regex: term, $options: "i" } },
+      { shortDescription: { $regex: term, $options: "i" } },
+      { description: { $regex: term, $options: "i" } },
+    ];
   }
-  if (typeof filters.minPrice === "number") query = query.gte("price", filters.minPrice);
-  if (typeof filters.maxPrice === "number") query = query.lte("price", filters.maxPrice);
 
-  if (filters.flag === "featured") query = query.eq("is_featured", true);
-  if (filters.flag === "trending") query = query.eq("is_trending", true);
-  if (filters.flag === "best-seller") query = query.eq("is_best_seller", true);
-  if (filters.flag === "new-arrival") query = query.eq("is_new_arrival", true);
-  if (filters.flag === "discounted") query = query.not("original_price", "is", null);
+  if (typeof filters.minPrice === "number" || typeof filters.maxPrice === "number") {
+    const priceFilter: Record<string, number> = {};
+    if (typeof filters.minPrice === "number") priceFilter.$gte = filters.minPrice;
+    if (typeof filters.maxPrice === "number") priceFilter.$lte = filters.maxPrice;
+    query.price = priceFilter;
+  }
 
+  if (filters.flag === "featured") query.isFeatured = true;
+  if (filters.flag === "trending") query.isTrending = true;
+  if (filters.flag === "best-seller") query.isBestSeller = true;
+  if (filters.flag === "new-arrival") query.isNewArrival = true;
+  if (filters.flag === "discounted") query.originalPrice = { $ne: null };
+
+  let sort: Record<string, 1 | -1> = { isFeatured: -1, rating: -1 };
   switch (filters.sort) {
     case "price-asc":
-      query = query.order("price", { ascending: true });
+      sort = { price: 1 };
       break;
     case "price-desc":
-      query = query.order("price", { ascending: false });
+      sort = { price: -1 };
       break;
     case "rating":
-      query = query.order("rating", { ascending: false });
+      sort = { rating: -1 };
       break;
     case "newest":
-      query = query.order("created_at", { ascending: false });
+      sort = { createdAt: -1 };
       break;
-    default:
-      query = query
-        .order("is_featured", { ascending: false })
-        .order("rating", { ascending: false });
   }
 
-  const { data, error } = await query.limit(filters.limit ?? 60);
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  const products = await Product.find(query)
+    .sort(sort)
+    .limit(filters.limit ?? 60)
+    .lean();
+
+  const categoryIds = [
+    ...new Set(products.map((p) => String(p.categoryId)).filter(Boolean)),
+  ];
+  const categories = await Category.find({ _id: { $in: categoryIds } }).lean();
+  const catMap = new Map(categories.map((c) => [String(c._id), { name: c.name, slug: c.slug }]));
+
+  return products.map((p) =>
+    mapProduct({
+      ...p,
+      category: p.categoryId ? catMap.get(String(p.categoryId)) ?? null : null,
+    } as never),
+  );
 }
+
+export async function getProductBySlug(slug: string) {
+  await connectMongo();
+  const product = await Product.findOne({ slug, isActive: true }).lean();
+  if (!product) return null;
+
+  let category = null;
+  if (product.categoryId) {
+    const cat = await Category.findById(product.categoryId).lean();
+    if (cat) category = { name: cat.name, slug: cat.slug };
+  }
+
+  return mapProduct({ ...product, category } as never);
+}
+
+export async function getRelatedProducts(categoryId: Types.ObjectId | null, excludeId: Types.ObjectId) {
+  if (!categoryId) return [];
+  const products = await Product.find({
+    categoryId,
+    isActive: true,
+    _id: { $ne: excludeId },
+  })
+    .limit(4)
+    .lean();
+  return products.map((p) => mapProduct(p as never));
+}
+
+export async function listCategories() {
+  await connectMongo();
+  const rows = await Category.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
+  return rows.map(mapCategory);
+}
+
+export async function listBanners() {
+  await connectMongo();
+  const { Banner } = await import("@/integrations/mongodb/models");
+  const rows = await Banner.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
+  return rows.map((b) => ({
+    id: String(b._id),
+    heading: b.heading,
+    description: b.description,
+    image_url: b.imageUrl,
+    cta_label: b.ctaLabel,
+    cta_link: b.ctaLink,
+  }));
+}
+
+export async function getStoreSettings() {
+  await connectMongo();
+  const { StoreSettings, mapStoreSettings } = await import("@/integrations/mongodb/models");
+  const row = await StoreSettings.findOne({ key: "default" }).lean();
+  return row ? mapStoreSettings(row as Record<string, unknown>) : null;
+}
+
+// Legacy export name used by sitemap
+export const publicClient = null;

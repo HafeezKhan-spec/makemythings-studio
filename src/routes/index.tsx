@@ -19,13 +19,13 @@ import type { Product } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MakeMyThings.in — You Imagine It. We Make It." },
+      { title: "MakeMyThing.in — You Imagine It. We Make It." },
       {
         name: "description",
         content:
           "Premium 3D printed anime figures, collectibles, home décor, desk accessories and fully custom prints. Delivered across India.",
       },
-      { property: "og:title", content: "MakeMyThings.in — You Imagine It. We Make It." },
+      { property: "og:title", content: "MakeMyThing.in — You Imagine It. We Make It." },
       {
         property: "og:description",
         content: "Custom 3D printing studio for collectibles, décor and personalised gifts in India.",
@@ -190,7 +190,7 @@ function Home() {
       {/* Why us */}
       <section className="border-y border-border bg-surface/40">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-          <SectionHead eyebrow="Why MakeMyThings?" title="Built by makers, for makers" />
+          <SectionHead eyebrow="Why MakeMyThing?" title="Built by makers, for makers" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {BENEFITS.map((benefit) => (
               <div

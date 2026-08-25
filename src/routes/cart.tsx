@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -7,15 +7,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/cart";
+import { useAuth } from "@/hooks/useAuth";
+import { checkoutRedirectPath } from "@/lib/auth-redirect";
 import { quoteCart } from "@/lib/orders.functions";
 import { inr } from "@/lib/format";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Cart — MakeMyThings.in" },
+      { title: "Your Cart — MakeMyThing.in" },
       { name: "description", content: "Review your 3D printed products, apply a coupon and checkout." },
-      { property: "og:title", content: "Your Cart — MakeMyThings.in" },
+      { property: "og:title", content: "Your Cart — MakeMyThing.in" },
       { property: "og:description", content: "Review your cart and checkout securely." },
     ],
   }),
@@ -24,6 +26,8 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { lines, setQuantity, remove, hydrated } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<string | undefined>(undefined);
 
@@ -50,6 +54,15 @@ function CartPage() {
       }
     },
   });
+
+  function handleProceedToCheckout() {
+    const checkoutPath = checkoutRedirectPath(coupon);
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: checkoutPath } });
+      return;
+    }
+    navigate({ to: "/checkout", search: coupon ? { coupon } : {} });
+  }
 
   if (hydrated && !lines.length) {
     return (
@@ -198,11 +211,38 @@ function CartPage() {
               </div>
             </dl>
 
-            <Button asChild size="lg" className="mt-5 w-full rounded-full">
-              <Link to="/checkout" search={coupon ? { coupon } : {}}>
-                Proceed to checkout
-              </Link>
+            {!user && !authLoading ? (
+              <p className="mt-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                Please log in or create an account to continue with your order. Your cart stays
+                saved while you sign in.
+              </p>
+            ) : null}
+
+            <Button
+              size="lg"
+              className="mt-5 w-full rounded-full"
+              disabled={authLoading}
+              onClick={() => handleProceedToCheckout()}
+            >
+              {user ? "Proceed to checkout" : "Sign in to checkout"}
             </Button>
+            {!user && !authLoading ? (
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
+                <Button asChild size="sm" variant="secondary" className="rounded-full">
+                  <Link to="/auth" search={{ redirect: checkoutRedirectPath(coupon) }}>
+                    Log in
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="rounded-full">
+                  <Link
+                    to="/auth"
+                    search={{ redirect: checkoutRedirectPath(coupon), mode: "signup" }}
+                  >
+                    Create account
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
             <p className="mt-3 text-center text-[11px] text-muted-foreground">
               Totals are calculated securely on our servers.
             </p>

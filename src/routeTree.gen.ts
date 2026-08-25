@@ -20,11 +20,18 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CustomPrintingRouteImport } from './routes/custom-printing'
 import { Route as OffersRouteImport } from './routes/offers'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as ShippingPolicyRouteImport } from './routes/shipping-policy'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as AdminOrdersOrderIdInvoiceRouteImport } from './routes/admin.orders.$orderId.invoice'
+import { Route as AdminOrdersOrderIdLabelRouteImport } from './routes/admin.orders.$orderId.label'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +88,26 @@ const OrdersRoute = OrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingPolicyRoute = ShippingPolicyRouteImport.update({
+  id: '/shipping-policy',
+  path: '/shipping-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -89,6 +116,11 @@ const ShopRoute = ShopRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WishlistRoute = WishlistRouteImport.update({
@@ -106,11 +138,22 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOrdersOrderIdInvoiceRoute =
+  AdminOrdersOrderIdInvoiceRouteImport.update({
+    id: '/orders/$orderId/invoice',
+    path: '/orders/$orderId/invoice',
+    getParentRoute: () => AdminRoute,
+  } as any)
+const AdminOrdersOrderIdLabelRoute = AdminOrdersOrderIdLabelRouteImport.update({
+  id: '/orders/$orderId/label',
+  path: '/orders/$orderId/label',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
@@ -119,16 +162,23 @@ export interface FileRoutesByFullPath {
   '/custom-printing': typeof CustomPrintingRoute
   '/offers': typeof OffersRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/orders/$orderId/invoice': typeof AdminOrdersOrderIdInvoiceRoute
+  '/admin/orders/$orderId/label': typeof AdminOrdersOrderIdLabelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
@@ -137,17 +187,24 @@ export interface FileRoutesByTo {
   '/custom-printing': typeof CustomPrintingRoute
   '/offers': typeof OffersRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/orders/$orderId/invoice': typeof AdminOrdersOrderIdInvoiceRoute
+  '/admin/orders/$orderId/label': typeof AdminOrdersOrderIdLabelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
@@ -156,11 +213,18 @@ export interface FileRoutesById {
   '/custom-printing': typeof CustomPrintingRoute
   '/offers': typeof OffersRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/orders/$orderId/invoice': typeof AdminOrdersOrderIdInvoiceRoute
+  '/admin/orders/$orderId/label': typeof AdminOrdersOrderIdLabelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -176,11 +240,18 @@ export interface FileRouteTypes {
     | '/custom-printing'
     | '/offers'
     | '/orders'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/shipping-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/wishlist'
     | '/order/$id'
     | '/product/$slug'
+    | '/admin/orders/$orderId/invoice'
+    | '/admin/orders/$orderId/label'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -194,11 +265,18 @@ export interface FileRouteTypes {
     | '/custom-printing'
     | '/offers'
     | '/orders'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/shipping-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/wishlist'
     | '/order/$id'
     | '/product/$slug'
+    | '/admin/orders/$orderId/invoice'
+    | '/admin/orders/$orderId/label'
   id:
     | '__root__'
     | '/'
@@ -212,17 +290,24 @@ export interface FileRouteTypes {
     | '/custom-printing'
     | '/offers'
     | '/orders'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/shipping-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/wishlist'
     | '/order/$id'
     | '/product/$slug'
+    | '/admin/orders/$orderId/invoice'
+    | '/admin/orders/$orderId/label'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
@@ -231,8 +316,13 @@ export interface RootRouteChildren {
   CustomPrintingRoute: typeof CustomPrintingRoute
   OffersRoute: typeof OffersRoute
   OrdersRoute: typeof OrdersRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
+  ShippingPolicyRoute: typeof ShippingPolicyRoute
   ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   WishlistRoute: typeof WishlistRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
@@ -317,6 +407,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping-policy': {
+      id: '/shipping-policy'
+      path: '/shipping-policy'
+      fullPath: '/shipping-policy'
+      preLoaderRoute: typeof ShippingPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -329,6 +447,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wishlist': {
@@ -352,13 +477,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/orders/$orderId/invoice': {
+      id: '/admin/orders/$orderId/invoice'
+      path: '/orders/$orderId/invoice'
+      fullPath: '/admin/orders/$orderId/invoice'
+      preLoaderRoute: typeof AdminOrdersOrderIdInvoiceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders/$orderId/label': {
+      id: '/admin/orders/$orderId/label'
+      path: '/orders/$orderId/label'
+      fullPath: '/admin/orders/$orderId/label'
+      preLoaderRoute: typeof AdminOrdersOrderIdLabelRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminOrdersOrderIdInvoiceRoute: typeof AdminOrdersOrderIdInvoiceRoute
+  AdminOrdersOrderIdLabelRoute: typeof AdminOrdersOrderIdLabelRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminOrdersOrderIdInvoiceRoute: AdminOrdersOrderIdInvoiceRoute,
+  AdminOrdersOrderIdLabelRoute: AdminOrdersOrderIdLabelRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
@@ -367,8 +518,13 @@ const rootRouteChildren: RootRouteChildren = {
   CustomPrintingRoute: CustomPrintingRoute,
   OffersRoute: OffersRoute,
   OrdersRoute: OrdersRoute,
+  PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
+  ShippingPolicyRoute: ShippingPolicyRoute,
   ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   WishlistRoute: WishlistRoute,
   OrderIdRoute: OrderIdRoute,
   ProductSlugRoute: ProductSlugRoute,

@@ -8,6 +8,7 @@ export type Product = {
   original_price: number | null;
   category_id: string | null;
   images: string[];
+  videos: string[];
   stock: number;
   material: string | null;
   colors: string[];

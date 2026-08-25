@@ -7,16 +7,16 @@ import { listCategories } from "@/lib/catalog.functions";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
-      { title: "Product Categories — MakeMyThings.in" },
+      { title: "Product Categories — MakeMyThing.in" },
       {
         name: "description",
         content:
           "Explore 3D printing categories: anime collectibles, home décor, desk accessories, keychains, miniatures, tech gear and gifts.",
       },
-      { property: "og:title", content: "Product Categories — MakeMyThings.in" },
+      { property: "og:title", content: "Product Categories — MakeMyThing.in" },
       {
         property: "og:description",
-        content: "Browse every 3D printing category at MakeMyThings.in.",
+        content: "Browse every 3D printing category at MakeMyThing.in.",
       },
     ],
   }),

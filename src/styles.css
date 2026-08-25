@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * MakeMyThings.in design system — premium dark studio theme with a molten
+ * MakeMyThing.in design system — premium dark studio theme with a molten
  * amber accent. All colors are oklch tokens; components must never hardcode
  * color utilities.
  */
@@ -192,5 +192,16 @@
     transform: translateY(-6px);
     box-shadow: var(--shadow-lift);
     border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-document-root,
+  .print-document-root body {
+    background: #fff !important;
   }
 }

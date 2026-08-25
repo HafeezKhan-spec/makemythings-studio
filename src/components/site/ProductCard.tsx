@@ -1,15 +1,17 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Stars } from "@/components/site/Stars";
 import { useCart } from "@/context/cart";
+import { showAddedToCartToast } from "@/lib/cart-toast";
 import { discountPercent, inr } from "@/lib/format";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { add } = useCart();
+  const { add, getQuantity } = useCart();
+  const navigate = useNavigate();
+  const inCart = getQuantity(product.id);
   const off = discountPercent(product.price, product.original_price);
   const image = product.images?.[0] ?? "/images/hero-3d.jpg";
 
@@ -76,6 +78,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="sm"
             className="flex-1"
+            variant={inCart ? "secondary" : "default"}
             onClick={() => {
               add({
                 productId: product.id,
@@ -85,10 +88,11 @@ export function ProductCard({ product }: { product: Product }) {
                 price: Number(product.price),
                 originalPrice: product.original_price ? Number(product.original_price) : null,
               });
-              toast.success(`${product.name} added to cart`);
+              showAddedToCartToast(product.name, () => navigate({ to: "/cart" }));
             }}
           >
-            <ShoppingCart className="mr-1.5 h-4 w-4" /> Add to cart
+            <ShoppingCart className="mr-1.5 h-4 w-4" />
+            {inCart ? `In cart (${inCart})` : "Add to cart"}
           </Button>
           <Button asChild size="sm" variant="secondary">
             <Link to="/product/$slug" params={{ slug: product.slug }}>

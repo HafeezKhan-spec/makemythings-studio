@@ -3,6 +3,7 @@ import { Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { getStoreSettings } from "@/lib/catalog.functions";
+import { SiteLogo } from "@/components/site/SiteLogo";
 
 export function Footer() {
   const { data: settings } = useQuery({
@@ -13,11 +14,11 @@ export function Footer() {
 
   return (
     <footer className="mt-24 border-t border-border bg-surface/50">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-5">
         <div className="space-y-3">
-          <span className="font-display text-lg font-extrabold">
-            MakeMyThings<span className="text-gradient-ember">.in</span>
-          </span>
+          <Link to="/">
+            <SiteLogo variant="header" />
+          </Link>
           <p className="text-sm text-muted-foreground">
             Custom 3D printing studio for collectibles, décor and one-of-a-kind gifts. Designed and
             printed in India.
@@ -71,10 +72,36 @@ export function Footer() {
           </ul>
         </div>
 
+        <div>
+          <h4 className="mb-3 text-sm font-semibold">Legal</h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>
+              <Link to="/privacy" className="hover:text-primary">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link to="/terms" className="hover:text-primary">
+                Terms & Conditions
+              </Link>
+            </li>
+            <li>
+              <Link to="/shipping-policy" className="hover:text-primary">
+                Shipping Policy
+              </Link>
+            </li>
+            <li>
+              <Link to="/refund-policy" className="hover:text-primary">
+                Refund & Cancellation
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         <div className="space-y-2 text-sm text-muted-foreground">
           <h4 className="mb-3 text-sm font-semibold text-foreground">Reach us</h4>
           <p className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-primary" /> {settings?.business_email ?? "hello@makemythings.in"}
+            <Mail className="h-4 w-4 text-primary" /> {settings?.business_email ?? "hello@MakeMyThing.in"}
           </p>
           <p className="flex items-center gap-2">
             <Phone className="h-4 w-4 text-primary" /> {settings?.business_phone ?? "+91 98765 43210"}
@@ -96,7 +123,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border px-4 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} MakeMyThings.in — You imagine it. We make it.
+        © {new Date().getFullYear()} MakeMyThing.in — You imagine it. We make it.
       </div>
     </footer>
   );

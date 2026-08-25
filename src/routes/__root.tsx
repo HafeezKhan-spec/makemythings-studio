@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -12,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "@/components/site/Header";
+import { CustomQuoteNotifier } from "@/components/site/CustomQuoteNotifier";
 import { Footer } from "@/components/site/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/cart";
@@ -80,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MakeMyThings.in — Custom 3D Printed Products in India" },
+      { title: "MakeMyThing.in — Custom 3D Printed Products in India" },
       {
         name: "description",
         content:
@@ -97,7 +99,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/logo.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -122,20 +125,24 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const isFulfillmentDoc = useRouterState({
+    select: (s) => /\/admin\/orders\/[^/]+\/(label|invoice)$/.test(s.location.pathname),
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
+          <div className={`flex min-h-screen flex-col ${isFulfillmentDoc ? "print-document-root" : ""}`}>
+            {isFulfillmentDoc ? null : <Header />}
+            <main className={isFulfillmentDoc ? "" : "flex-1"}>
               {/* Required: nested routes render here. */}
               <Outlet />
             </main>
-            <Footer />
+            {isFulfillmentDoc ? null : <Footer />}
           </div>
-          <Toaster position="top-center" richColors />
+          {isFulfillmentDoc ? null : <CustomQuoteNotifier />}
+          {isFulfillmentDoc ? null : <Toaster position="bottom-center" richColors />}
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
